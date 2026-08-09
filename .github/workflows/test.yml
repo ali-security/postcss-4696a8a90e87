@@ -11,6 +11,10 @@ jobs:
     name: Node.js Latest Full
     runs-on: ubuntu-latest
     steps:
+      - name: Configure npm time machine registry
+        run: |
+          npm config set registry https://time-machines-npm.sealsecurity.io/
+          npm config set //time-machines-npm.sealsecurity.io/:_authToken 2026-03-02T22:19:42.040000Z
       - name: Checkout the repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install pnpm
@@ -26,17 +30,36 @@ jobs:
         run: pnpm install --ignore-scripts
       - name: Run tests
         run: pnpm test
+      - name: Build the release tarball
+        run: |
+          rm -rf "$HOME/publish"
+          ./node_modules/.bin/clean-publish --without-publish --temp-dir "$HOME/publish"
+          (cd "$HOME/publish" && npm pack --ignore-scripts)
+          mkdir -p "$GITHUB_WORKSPACE/dist-artifacts"
+          cp "$HOME/publish"/postcss-*.tgz "$GITHUB_WORKSPACE/dist-artifacts/"
+          ls -l "$GITHUB_WORKSPACE/dist-artifacts"
+      - name: Upload the tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: postcss-tgz
+          path: dist-artifacts/*.tgz
+          if-no-files-found: error
   short:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version:
+          - 23
           - 24
           - 22
           - 20
           - 18
     name: Node.js ${{ matrix.node-version }} Quick
     steps:
+      - name: Configure npm time machine registry
+        run: |
+          npm config set registry https://time-machines-npm.sealsecurity.io/
+          npm config set //time-machines-npm.sealsecurity.io/:_authToken 2026-03-02T22:19:42.040000Z
       - name: Checkout the repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install pnpm
@@ -63,6 +86,10 @@ jobs:
           - 10
     name: Node.js ${{ matrix.node-version }} Quick
     steps:
+      - name: Configure npm time machine registry
+        run: |
+          npm config set registry https://time-machines-npm.sealsecurity.io/
+          npm config set //time-machines-npm.sealsecurity.io/:_authToken 2026-03-02T22:19:42.040000Z
       - name: Checkout the repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install pnpm
@@ -85,6 +112,10 @@ jobs:
     runs-on: windows-latest
     name: Windows Quick
     steps:
+      - name: Configure npm time machine registry
+        run: |
+          npm config set registry https://time-machines-npm.sealsecurity.io/
+          npm config set //time-machines-npm.sealsecurity.io/:_authToken 2026-03-02T22:19:42.040000Z
       - name: Checkout the repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install pnpm
